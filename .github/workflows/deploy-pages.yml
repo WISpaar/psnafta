@@ -1,0 +1,67 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Determine build and publish directory
+        id: prepare
+        run: |
+          set -e
+          PUBLISH_DIR=""
+          echo "Checking for package.json..."
+          if [ -f package.json ]; then
+            echo "package.json found"
+            if grep -q '"build"' package.json; then
+              echo "build script found — installing and building"
+              npm ci
+              npm run build
+            else
+              echo "no build script found, skipping npm build"
+            fi
+            # check common build output folders
+            for d in dist build out public docs; do
+              if [ -d "$d" ]; then
+                PUBLISH_DIR=$d
+                break
+              fi
+            done
+          fi
+          # if no build output chosen, check psnafta folder
+          if [ -z "$PUBLISH_DIR" ] && [ -d psnafta ]; then
+            if [ -f psnafta/index.html ]; then
+              PUBLISH_DIR="psnafta"
+            fi
+          fi
+          # fallback to repo root
+          if [ -z "$PUBLISH_DIR" ]; then
+            PUBLISH_DIR="."
+          fi
+          echo "Determined publish directory: $PUBLISH_DIR"
+          echo "publish_dir=$PUBLISH_DIR" >> $GITHUB_OUTPUT
+
+      - name: Show publish dir
+        run: |
+          echo "Publishing directory: ${{ steps.prepare.outputs.publish_dir }}"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.prepare.outputs.publish_dir }}
+          publish_branch: gh-pages
+          allow_empty_commit: false
