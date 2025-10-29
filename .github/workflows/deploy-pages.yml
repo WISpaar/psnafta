@@ -18,39 +18,12 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Determine build and publish directory
+      - name: Set publish directory to psnafta/
         id: prepare
         run: |
           set -e
-          PUBLISH_DIR=""
-          echo "Checking for package.json..."
-          if [ -f package.json ]; then
-            echo "package.json found"
-            if grep -q '"build"' package.json; then
-              echo "build script found — installing and building"
-              npm ci
-              npm run build
-            else
-              echo "no build script found, skipping npm build"
-            fi
-            # check common build output folders
-            for d in dist build out public docs; do
-              if [ -d "$d" ]; then
-                PUBLISH_DIR=$d
-                break
-              fi
-            done
-          fi
-          # if no build output chosen, check psnafta folder
-          if [ -z "$PUBLISH_DIR" ] && [ -d psnafta ]; then
-            if [ -f psnafta/index.html ]; then
-              PUBLISH_DIR="psnafta"
-            fi
-          fi
-          # fallback to repo root
-          if [ -z "$PUBLISH_DIR" ]; then
-            PUBLISH_DIR="."
-          fi
+          PUBLISH_DIR="psnafta"
+          echo "Publishing psnafta/ directory directly"
           echo "Determined publish directory: $PUBLISH_DIR"
           echo "publish_dir=$PUBLISH_DIR" >> $GITHUB_OUTPUT
 
