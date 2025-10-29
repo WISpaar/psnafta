@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>پترو سیال انرژی</title>
+    <script>
+      const base = '/psnafta/';
+      const path = window.location.pathname.replace(base, '');
+      sessionStorage.setItem('redirect', path);
+      window.location.href = base;
+    </script>
+  </head>
+  <body>
+    <!-- This page handles SPA routing on GitHub Pages -->
+    <noscript>
+      <p>برای مشاهده سایت به صفحه اصلی بروید: <a href="/psnafta/">صفحه اصلی</a></p>
+    </noscript>
+  </body>
+</html>
